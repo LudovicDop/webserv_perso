@@ -107,6 +107,11 @@ void ClientState::printInfo() const
 			std::cout << "\033[34m⚙️  PROCESSING\033[0m" << std::endl;
 			break;
 		case 3:
+			std::cout << "\033[34m🏊  CGI_IN_PROGRESS\033[0m" << std::endl;
+			break;
+		case 4:
+			std::cout << "\033[34m🏊  CGI_DONE\033[0m" << std::endl;
+		case 5:
 			std::cout << "\033[32m✅ RESPONDING\033[0m" << std::endl;
 			break;
 		default:

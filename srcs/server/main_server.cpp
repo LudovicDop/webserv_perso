@@ -6,7 +6,7 @@
 /*   By: ldoppler <ldoppler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 14:32:13 by hclaude           #+#    #+#             */
-/*   Updated: 2025/05/17 00:06:38 by ldoppler         ###   ########.fr       */
+/*   Updated: 2025/05/17 00:12:18 by ldoppler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -484,6 +484,7 @@ bool	process_request(Client* client, ServersDatas* serversdatas, size_t& i, std:
         // }
 		std::cout << BOLD_GREEN << "RESET " << fd << END << std::endl;
 	}
+	state->printInfo();
 	std::cout << "ENDDDD" << std::endl;
 	return (true);
 }
