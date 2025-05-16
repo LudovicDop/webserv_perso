@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard de Test Serveur</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --radius: 12px;
+      --bg: #f5f5f5;
+      --text: #1e1e1e;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 40px 20px;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 28px;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .case {
+      width: 100px;
+      height: 100px;
+      border-radius: var(--radius);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 16px;
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .case:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Couleurs par cas */
+    .success    { background: #2ecc71; }
+    .info       { background: #3498db; }
+    .warning    { background: #f39c12; }
+    .danger     { background: #e74c3c; }
+    .neutral    { background: #7f8c8d; }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 14px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Panneau de Tests - WebServ</h1>
+
+  <div class="grid">
+    <!-- ✅ Tests valides -->
+    <div class="case success" title="Requête GET classique" onclick="window.location.href='/'">GET /</div>
+    <div class="case info" title="Fichier existant" onclick="window.location.href='/index.html'">/index.html</div>
+    <div class="case info" title="Script PHP attendu" onclick="window.location.href='/test.php'">PHP</div>
+    <div class="case info" title="Upload HTML standard" onclick="window.location.href='/upload.html'">Upload</div>
+
+    <!-- ❌ Tests d’erreurs -->
+    <div class="case danger" title="Page inexistante → 404" onclick="window.location.href='/not-found-page'">404</div>
+    <div class="case warning" title="Mauvaise méthode HTTP → 405" onclick="sendMethod('BREW', '/method-not-allowed')">405</div>
+    <div class="case danger" title="Erreur interne serveur → 500" onclick="window.location.href='/cause500.php'">500</div>
+    <div class="case warning" title="Méthode PUT non supportée" onclick="sendMethod('PUT', '/put-test')">PUT</div>
+    <div class="case warning" title="Bad Request (header invalide)" onclick="sendBadRequest()">400</div>
+    <div class="case neutral" title="Méthode DELETE" onclick="sendMethod('DELETE', '/delete-test')">DELETE</div>
+    <div class="case neutral" title="Méthode PATCH" onclick="sendMethod('PATCH', '/patch-test')">PATCH</div>
+    <div class="case danger" title="Requête vers CGI planté" onclick="window.location.href='/cgi/fail.cgi'">CGI Fail</div>
+  </div>
+
+  <footer>&copy; 2025 WebServ Test Suite</footer>
+
+  <script>
+    function sendMethod(method, url) {
+      fetch(url, { method: method })
+        .then(() => window.location.href = url)
+        .catch(() => window.location.href = url);
+    }
+
+    function sendBadRequest() {
+      fetch('/bad-request', {
+        method: 'GET',
+        headers: { 'Host': '' }
+      }).then(() => window.location.href = '/bad-request');
+    }
+  </script>
+
+</body>
+</html>

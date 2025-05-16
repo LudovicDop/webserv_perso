@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page d'accueil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+  <header>
+    <h1>WebServ</h1>
+  </header>
+
+  <section class="hero">
+    <h2>Bienvenue</h2>
+    <p>Ceci est une page d'accueil élégante avec un style inspiré d'Apple. Simple, clair, efficace.</p>
+    <a href="destination.html" class="btn-primary">Page Suivante</a>
+  </section>
+
+  <section class="section fade-in">
+    <div class="form-wrapper">
+      <h2 style="text-align:center; margin-bottom:20px;">Formulaire de Contact</h2>
+
+      <!-- Sélecteur de méthode -->
+      <div style="text-align:center; margin-bottom: 20px;">
+        <label for="method" style="font-weight: 500;">Méthode :</label>
+        <select id="method" name="method" style="padding: 6px 12px; border-radius: 6px; font-size: 14px;">
+          <option value="POST" selected>POST</option>
+          <option value="GET">GET</option>
+        </select>
+      </div>
+
+      <form id="contact-form" action="submit.php" method="POST">
+        <div>
+          <label for="name">Nom :</label>
+          <input type="text" id="name" name="name" placeholder="Votre nom" required>
+        </div>
+        <div>
+          <label for="email">Email :</label>
+          <input type="email" id="email" name="email" placeholder="Votre email" required>
+        </div>
+        <div>
+          <input type="submit" value="Envoyer">
+        </div>
+      </form>
+
+      <script>
+        const methodSelect = document.getElementById('method');
+        const form = document.getElementById('contact-form');
+
+        methodSelect.addEventListener('change', () => {
+          form.method = methodSelect.value;
+        });
+      </script>
+
+    </div>
+  </section>
+
+  <section class="section fade-in">
+    <div class="form-wrapper">
+      <h2 style="text-align:center; margin-bottom:20px;">Upload de fichier (par php)</h2>
+      <form action="test.php" method="POST" enctype="multipart/form-data">
+        <div>
+          <label for="file">Votre fichier :</label>
+          <input type="file" id="file" name="file" placeholder="Votre fichier:" required>
+        </div>
+        <div>
+          <input type="submit" name="submit" value="Envoyer">
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section fade-in">
+    <div class="form-wrapper">
+      <h2 style="text-align:center; margin-bottom:20px;">Upload de fichier (par python)</h2>
+      <form action="fdp.py" method="POST" enctype="multipart/form-data">
+        <div>
+          <label for="file">Votre fichier :</label>
+          <input type="file" id="file" name="file" placeholder="Votre fichier:" required>
+        </div>
+        <div>
+          <input type="submit" name="submit" value="Envoyer">
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section fade-in">
+    <div class="form-wrapper">
+      <h2 style="text-align:center; margin-bottom:20px;">Suppression de fichier</h2>
+      <div class="file-list" id="files-container">
+        <p>Chargement des fichiers...</p>
+      </div>
+      <div style="margin-top: 15px;">
+        <button type="button" id="delete-button" disabled>Supprimer le fichier sélectionné</button>
+      </div>
+      <div style="margin-top: 10px;" id="delete-status"></div>
+    </div>
+  </section>
+
+  <section class="contributors fade-in">
+    <div class="contributor">Alain Fan</div>
+    <div class="contributor">Hipolit Clodo</div>
+    <div class="contributor">Doppler Ludovic</div>
+  </section>
+
+  <footer>
+    &copy; 2025 WebServ. Tous droits réservés.
+  </footer>
+  <section type="button" onclick="window.location.href='easter/easter.html'">LIEN</section>
+
+  <script>
+    const fadeEls = document.querySelectorAll('.fade-in');
+
+    function checkFadeIn() {
+      fadeEls.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 50) {
+          el.classList.add('visible');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', checkFadeIn);
+    window.addEventListener('load', checkFadeIn);
+
+    // Code pour charger la liste des fichiers et gérer la suppression
+    document.addEventListener('DOMContentLoaded', function() {
+      const filesContainer = document.getElementById('files-container');
+      const deleteButton = document.getElementById('delete-button');
+      const deleteStatus = document.getElementById('delete-status');
+      let selectedFile = null;
+
+      // Fonction pour charger les fichiers
+      function loadFiles() {
+        fetch('list_files.php')
+          .then(response => response.json())
+          .then(data => {
+            if (data.length === 0) {
+              filesContainer.innerHTML = '<p>Aucun fichier trouvé dans le dossier.</p>';
+              return;
+            }
+
+            let html = '<ul style="list-style-type: none; padding: 0;">';
+            data.forEach(file => {
+              html += `<li style="margin-bottom: 10px;">
+                <input type="radio" name="file" value="${file}" id="${file}">
+                <label for="${file}">${file}</label>
+              </li>`;
+            });
+            html += '</ul>';
+            filesContainer.innerHTML = html;
+
+            // Ajouter des écouteurs d'événements aux boutons radio
+            const radioButtons = document.querySelectorAll('input[name="file"]');
+            radioButtons.forEach(radio => {
+              radio.addEventListener('change', function() {
+                selectedFile = this.value;
+                deleteButton.disabled = false;
+              });
+            });
+          })
+          .catch(error => {
+            console.error('Erreur lors du chargement des fichiers:', error);
+            filesContainer.innerHTML = '<p>Erreur lors du chargement des fichiers.</p>';
+          });
+      }
+
+      // Fonction pour supprimer un fichier avec la méthode DELETE
+      deleteButton.addEventListener('click', function() {
+        if (!selectedFile) return;
+
+        const fileToDelete = 'uploads/' + selectedFile;
+
+        // Afficher l'état de la suppression
+        deleteStatus.innerHTML = `<p>Tentative de suppression de ${selectedFile}...</p>`;
+
+        // Envoyer une requête DELETE
+        fetch(fileToDelete, {
+          method: 'DELETE',
+        })
+        .then(response => {
+          if (response.ok) {
+            deleteStatus.innerHTML = `<p style="color: green;">Le fichier ${selectedFile} a été supprimé avec succès.</p>`;
+            // Recharger la liste des fichiers
+            loadFiles();
+            deleteButton.disabled = true;
+          } else {
+            deleteStatus.innerHTML = `<p style="color: red;">Erreur lors de la suppression: ${response.status} ${response.statusText}</p>`;
+          }
+        })
+        .catch(error => {
+          deleteStatus.innerHTML = `<p style="color: red;">Erreur lors de la suppression: ${error.message}</p>`;
+        });
+      });
+
+      // Charger les fichiers au chargement de la page
+      loadFiles();
+    });
+  </script>
+</body>
+</html>

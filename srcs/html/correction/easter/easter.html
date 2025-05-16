@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Easter Egg</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .back-button {
+            padding: 10px 20px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        .easter-trigger {
+            display: inline-block;
+            margin: 20px;
+            color: #999;
+            cursor: pointer;
+        }
+        .easter-message {
+            display: none;
+            padding: 15px;
+            background-color: #ffeb3b;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenue sur notre page</h1>
+        <p>Ceci est une page web basique pour le projet Webserv.</p>
+
+        <button class="back-button" onclick="window.location.href='../correct.html'">Retourner en arrière</button>
+
+        <p>Explorez la page pour trouver une surprise...</p>
+
+        <span class="easter-trigger" onclick="revealEaster()">•</span>
+
+        <div id="easter-egg" class="easter-message">
+            🎉 Félicitations ! Vous avez trouvé l'easter egg caché ! 🎉
+        </div>
+    </div>
+
+    <script>
+        function revealEaster() {
+            const easterEgg = document.getElementById('easter-egg');
+            easterEgg.style.display = 'block';
+
+            // Ajouter une animation simple
+            easterEgg.style.animation = 'fadeIn 0.5s';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+services:
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    ports:
+      - 4430:4430
+    volumes:
+      - /home/ahans/data/wordpress:/var/www/html
+      - /run/php:/run/php
+    restart: always
+    networks:
+      - net
+
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    image: mariadb
+    ports:
+      - "3306:3306"
+    volumes:
+      - /home/ahans/data/mariadb:/var/lib/mysql
+    networks:
+      - net
+    env_file:
+      - .env
+
+  wordpress:
+    container_name: wordpress
+    depends_on:
+      - mariadb
+      - nginx
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - /home/ahans/data/wordpress:/var/www/html
+      - /run/php:/run/php
+    networks:
+      - net
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
