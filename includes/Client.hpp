@@ -133,13 +133,18 @@ class Client
 		void		initHeader(t_header& param, size_t length);
 
 		/*CGI*/
-		std::string cgi(Server *server, ClientState &state);
+		std::string cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds);
 		std::string	findBinPath(Server *server);
 		void		setHeader(const struct t_header& param,std::string& dest);
 		/*Error*/
 		std::string	pageErrorGenerator(std::string error, std::string msg);
 		std::string pageError(int errorStatus, Server *server);
 		std::string loadPersonalizeErrorPage(std::string path_to_page);
+
+		/*new cgi in progress*/
+		bool  		start_cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds);
+		bool	continue_cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds);
+
 	private:
 		ClientState						_state;
 		std::string							_root;

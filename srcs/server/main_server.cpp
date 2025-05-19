@@ -6,7 +6,7 @@
 /*   By: ldoppler <ldoppler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 14:32:13 by hclaude           #+#    #+#             */
-/*   Updated: 2025/05/17 00:12:18 by ldoppler         ###   ########.fr       */
+/*   Updated: 2025/05/19 14:46:18 by ldoppler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,7 +212,7 @@ std::string redirect(std::string& link)
 	return (response);
 }
 
-std::string	execGET(Client* client, int index_server, ServersDatas* serverdatas, int fd, std::map<int, ClientState*> client_state)
+std::string	execGET(Client* client, int index_server, ServersDatas* serverdatas, int fd, std::map<int, ClientState*> client_state, std::vector<struct pollfd>& poll_fds)
 {
 	std::string	response;
 	int			i;
@@ -240,7 +240,7 @@ std::string	execGET(Client* client, int index_server, ServersDatas* serverdatas,
 	if (!client->checkPageExists())
 	{
 		if (!isCgiRequired(serverdatas->server[index_server], client))
-			response = client->cgi(serverdatas->server[index_server], *client_state[fd]);
+			response = client->cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
 		else
 		{
 			response = client->convertRequestForSend(serverdatas->server[index_server]->routes[i], serverdatas->server[index_server]);
@@ -259,7 +259,7 @@ std::string	execGET(Client* client, int index_server, ServersDatas* serverdatas,
 	return (response);
 }
 
-std::string	execPOST(Client* client, int index_server, ServersDatas* serverdatas, int fd, std::map<int, ClientState*> client_state)
+std::string	execPOST(Client* client, int index_server, ServersDatas* serverdatas, int fd, std::map<int, ClientState*> client_state, std::vector<struct pollfd>& poll_fds)
 {
 	std::string	response;
 	int			i;
@@ -288,7 +288,7 @@ std::string	execPOST(Client* client, int index_server, ServersDatas* serverdatas
 	{
 		if (!isCgiRequired(serverdatas->server[index_server], client))
 		{
-			response = client->cgi(serverdatas->server[index_server], *client_state[fd]);
+			response = client->cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
 		}
 		else
 		{
@@ -431,9 +431,9 @@ bool	process_request(Client* client, ServersDatas* serversdatas, size_t& i, std:
 			const std::string method = client->getMethod();
 
 			if (method == "GET")
-				response = execGET(client, index_server, serversdatas, fd, client_state);
+				response = execGET(client, index_server, serversdatas, fd, client_state, poll_fds);
 			else if (method == "POST")
-				response = execPOST(client, index_server, serversdatas, fd, client_state);
+				response = execPOST(client, index_server, serversdatas, fd, client_state, poll_fds);
 			else if (method == "DELETE")
 			{
 				response = execDELETE(client, index_server, serversdatas);

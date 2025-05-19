@@ -560,10 +560,231 @@ void	ClientState::setCurrentLengthCGI(unsigned long long size)
 	_currentLengthCGI = size;
 }
 
-std::string Client:: cgi(Server *server, ClientState &state)
+// std::string Client:: cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds)
+// {
+// 	std::cout << BLUE << "                  =-= Starting CGI =-=" << END << std::endl;
+// (void)poll_fds;
+// 	state.setClientState(CGI_IN_PROGRESS);
+	
+//     std::string total_output;
+// 	std::string header;
+//     std::string path = server->routes[0]->cgi->extensions[getExtensionFile(_url_path)];
+    
+//     if (path.empty()) {
+//         return pageError(500, server);
+//     }
+
+//     // Préparation des variables d'environnement
+//     std::vector<std::string> env;
+//     env.push_back("REQUEST_METHOD=" + _method);
+//     env.push_back("CONTENT_LENGTH=" + _content_length);
+//     env.push_back("CONTENT_TYPE=" + (_header["Content-Type"].empty() ? 
+//         "application/x-www-form-urlencoded" : _header["Content-Type"]));
+//     env.push_back("QUERY_STRING=" + (_method == "POST" ? "" : _body));
+//     env.push_back("SCRIPT_FILENAME=" + _url_path);
+//     env.push_back("REDIRECT_STATUS=200");
+//     env.push_back("REQUEST_URI=" + _url);
+
+//     std::vector<const char*> envp;
+//     for (size_t i = 0; i < env.size(); ++i) {
+//         envp.push_back(env[i].c_str());
+//     }
+//     envp.push_back(NULL);
+// 	char *av[] = {(char*)path.c_str(),
+// 		(char *)"-d", (char *)"max_file_uploads=1000",
+// 		(char *)"-d", (char *)"max_file_uploads=1000",
+// 		(char *)"-d", (char *)"post_max_size=2100G",
+// 		(char *)"-d", (char *)"upload_max_filesize=20G",
+// 		(char *)"-d", (char *)"memory_limit=16G",
+// 		NULL};
+
+// 	//print env variable content
+// 	for (size_t i = 0; envp[i] != NULL; ++i)
+// 		std::cout << PURPLE << envp[i] << END << std::endl;
+// 	std::cout << std::endl;
+
+// 	int pipefd_out[2];
+// 	int pipefd_in[2];
+
+// 	if (pipe(pipefd_out) == -1 || pipe(pipefd_in) == -1)
+// 		return pageError(500, server);
+
+// 	int id = fork();
+// 	if (id == -1) {
+// 		close(pipefd_out[0]); close(pipefd_out[1]);
+//         close(pipefd_in[0]); close(pipefd_in[1]);
+// 		return pageError(500, server);
+// 	}
+
+// 	if (id == 0)
+// 	{
+// 		close(pipefd_out[0]); //close read pipe
+// 		close(pipefd_in[1]);
+
+// 		if (dup2(pipefd_in[0], STDIN_FILENO) == -1)
+// 			exit(EXIT_FAILURE);
+// 		if (dup2(pipefd_out[1], STDOUT_FILENO) == -1)
+// 			exit(EXIT_FAILURE);
+
+// 		close(pipefd_in[0]);
+// 		close(pipefd_out[1]);
+
+// 		execve(path.c_str(),  av, (char **)&envp[0]);
+// 		exit(EXIT_FAILURE);
+// 	}
+// 	else
+// 	{
+// 		close(pipefd_in[0]);
+// 		close(pipefd_out[1]); //close write pipe
+
+// 		int fd = open(state.getTmpFilePath().c_str(), O_RDONLY);
+// 		if (fd < 0) {
+// 			perror("open");
+// 			close(pipefd_in[1]);
+// 			close(pipefd_out[0]);
+// 			return NULL;
+// 		}
+		
+// 		// struct pollfd fd_poll;
+// 		// fd_poll.fd = fd;
+// 		// fd_poll.revents = POLLIN;
+// 		// fd_poll.events = 0;
+
+
+// 		// poll_fds.push_back(fd_poll);
+
+// 		char buffer[4096];
+// 		ssize_t bytes_read = 0;
+// 		(void)bytes_read;
+// 		// while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0) {
+// 		// 	ssize_t total_written = 0;
+// 		// 	while (total_written < bytes_read) {
+// 		// 		ssize_t written = write(pipefd_in[1], buffer + total_written, bytes_read - total_written);
+// 		// 		if (written == -1)
+// 		// 			break;
+// 		// 		total_written += written;
+// 		// 	}
+// 		// 	if (total_written != bytes_read) {
+// 		// 		// Gestion d'erreur incomplète
+// 		// 		// break;
+// 		// 	}
+// 		// }
+// 		bytes_read = read(fd, buffer, sizeof(buffer));
+// 		ssize_t written = write(pipefd_in[1], buffer, bytes_read);
+// 		state.setCurrentLengthCGI(state.getCurrentLengthCGI() + written);
+
+// 		close(fd);
+// 		close(pipefd_in[1]);
+
+// 		ssize_t byte_read;
+// 		char buf[4096];
+		
+// 		while ((byte_read = read(pipefd_out[0], buf, sizeof(buf))) > 0)
+// 			total_output.append(buf, byte_read);
+
+// 		close(pipefd_out[0]);
+// 		// waitpid(id, 0, 0);
+// 		wait(NULL);
+// 	}
+
+// 	hideHeaderCGI(total_output);
+
+// 	//init my header
+// 	struct t_header param;
+// 	this->initHeader(param, total_output.size());
+// 	this->setHeader(param, header);
+// 	std::string ret = header + total_output;
+// 	// header = concatenate(header, total_output.c_str());
+
+// 	std::cout << "currentLengthCGI: " << state.getCurrentLengthCGI() << " and ContentLength: " << state.getContentLength() << std::endl;
+// 	if (state.getCurrentLengthCGI() >= state.getContentLength())
+// 		state.setClientState(RESPONDING);
+
+	
+// 	std::cout << BLUE << header << END << std::endl;
+// 	std::cout << GREEN << "\n=-=-=-= CGI has been executed successfully! =-=-=-=" << END << std::endl;
+// 	return (ret);
+// }
+
+// bool	Client::continue_cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds)
+// {
+// 		close(pipefd_in[0]);
+// 		close(pipefd_out[1]); //close write pipe
+
+// 		int fd = open(state.getTmpFilePath().c_str(), O_RDONLY);
+// 		if (fd < 0) {
+// 			perror("open");
+// 			close(pipefd_in[1]);
+// 			close(pipefd_out[0]);
+// 			return NULL;
+// 		}
+		
+// 		// struct pollfd fd_poll;
+// 		// fd_poll.fd = fd;
+// 		// fd_poll.revents = POLLIN;
+// 		// fd_poll.events = 0;
+
+
+// 		// poll_fds.push_back(fd_poll);
+
+// 		char buffer[4096];
+// 		ssize_t bytes_read = 0;
+// 		(void)bytes_read;
+// 		// while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0) {
+// 		// 	ssize_t total_written = 0;
+// 		// 	while (total_written < bytes_read) {
+// 		// 		ssize_t written = write(pipefd_in[1], buffer + total_written, bytes_read - total_written);
+// 		// 		if (written == -1)
+// 		// 			break;
+// 		// 		total_written += written;
+// 		// 	}
+// 		// 	if (total_written != bytes_read) {
+// 		// 		// Gestion d'erreur incomplète
+// 		// 		// break;
+// 		// 	}
+// 		// }
+// 		bytes_read = read(fd, buffer, sizeof(buffer));
+// 		ssize_t written = write(pipefd_in[1], buffer, bytes_read);
+// 		state.setCurrentLengthCGI(state.getCurrentLengthCGI() + written);
+
+// 		close(fd);
+// 		close(pipefd_in[1]);
+
+// 		ssize_t byte_read;
+// 		char buf[4096];
+		
+// 		while ((byte_read = read(pipefd_out[0], buf, sizeof(buf))) > 0)
+// 			total_output.append(buf, byte_read);
+
+// 		close(pipefd_out[0]);
+// 		// waitpid(id, 0, 0);
+// 		wait(NULL);
+// 	}
+
+// 	hideHeaderCGI(total_output);
+
+// 	//init my header
+// 	struct t_header param;
+// 	this->initHeader(param, total_output.size());
+// 	this->setHeader(param, header);
+// 	std::string ret = header + total_output;
+// 	// header = concatenate(header, total_output.c_str());
+
+// 	std::cout << "currentLengthCGI: " << state.getCurrentLengthCGI() << " and ContentLength: " << state.getContentLength() << std::endl;
+// 	if (state.getCurrentLengthCGI() >= state.getContentLength())
+// 		state.setClientState(RESPONDING);
+
+	
+// 	std::cout << BLUE << header << END << std::endl;
+// 	std::cout << GREEN << "\n=-=-=-= CGI has been executed successfully! =-=-=-=" << END << std::endl;
+// 	return (true);
+// }
+
+bool Client:: start_cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds)
 {
 	std::cout << BLUE << "                  =-= Starting CGI =-=" << END << std::endl;
 
+	(void)poll_fds;
 	state.setClientState(CGI_IN_PROGRESS);
 	
     std::string total_output;
@@ -571,7 +792,7 @@ std::string Client:: cgi(Server *server, ClientState &state)
     std::string path = server->routes[0]->cgi->extensions[getExtensionFile(_url_path)];
     
     if (path.empty()) {
-        return pageError(500, server);
+        return false;
     }
 
     // Préparation des variables d'environnement
@@ -607,13 +828,13 @@ std::string Client:: cgi(Server *server, ClientState &state)
 	int pipefd_in[2];
 
 	if (pipe(pipefd_out) == -1 || pipe(pipefd_in) == -1)
-		return pageError(500, server);
+		return false;
 
 	int id = fork();
 	if (id == -1) {
 		close(pipefd_out[0]); close(pipefd_out[1]);
         close(pipefd_in[0]); close(pipefd_in[1]);
-		return pageError(500, server);
+		return false;
 	}
 
 	if (id == 0)
@@ -632,69 +853,5 @@ std::string Client:: cgi(Server *server, ClientState &state)
 		execve(path.c_str(),  av, (char **)&envp[0]);
 		exit(EXIT_FAILURE);
 	}
-	else
-	{
-		close(pipefd_in[0]);
-		close(pipefd_out[1]); //close write pipe
-
-		int fd = open(state.getTmpFilePath().c_str(), O_RDONLY);
-		if (fd < 0) {
-			perror("open");
-			close(pipefd_in[1]);
-			close(pipefd_out[0]);
-			return NULL;
-		}
-		
-		char buffer[4096];
-		ssize_t bytes_read = 0;
-		(void)bytes_read;
-		// while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0) {
-		// 	ssize_t total_written = 0;
-		// 	while (total_written < bytes_read) {
-		// 		ssize_t written = write(pipefd_in[1], buffer + total_written, bytes_read - total_written);
-		// 		if (written == -1)
-		// 			break;
-		// 		total_written += written;
-		// 	}
-		// 	if (total_written != bytes_read) {
-		// 		// Gestion d'erreur incomplète
-		// 		// break;
-		// 	}
-		// }
-		bytes_read = read(fd, buffer, sizeof(buffer));
-		ssize_t written = write(pipefd_in[1], buffer, bytes_read);
-		state.setCurrentLengthCGI(state.getCurrentLengthCGI() + written);
-
-		close(fd);
-		close(pipefd_in[1]);
-
-
-
-		ssize_t byte_read;
-		char buf[4096];
-		
-		while ((byte_read = read(pipefd_out[0], buf, sizeof(buf))) > 0)
-			total_output.append(buf, byte_read);
-
-		close(pipefd_out[0]);
-		waitpid(id, 0, 0);
-	}
-
-	hideHeaderCGI(total_output);
-
-	//init my header
-	struct t_header param;
-	this->initHeader(param, total_output.size());
-	this->setHeader(param, header);
-	std::string ret = header + total_output;
-	// header = concatenate(header, total_output.c_str());
-
-	std::cout << "currentLengthCGI: " << state.getCurrentLengthCGI() << " and ContentLength: " << state.getContentLength() << std::endl;
-	if (state.getCurrentLengthCGI() >= state.getContentLength())
-		state.setClientState(CGI_DONE);
-
-	
-	std::cout << BLUE << header << END << std::endl;
-	std::cout << GREEN << "\n=-=-=-= CGI has been executed successfully! =-=-=-=" << END << std::endl;
-	return (ret);
+	return (true);
 }
