@@ -175,3 +175,27 @@ void ClientState::reset() {
 		_tmpFilePath.clear();
     }
 }
+
+void ClientState::setPipeFdOut(int pipefd_out[2]) {
+	this->_pipefd_out[0] = pipefd_out[0];
+	this->_pipefd_out[1] = pipefd_out[1];
+}
+
+void ClientState::setPipeFdIn(int pipefd_in[2]) {
+	this->_pipefd_in[0] = pipefd_in[0];
+	this->_pipefd_in[1] = pipefd_in[1];
+}
+
+void ClientState::setFdTmpFile(int fd) {
+	this->_fd_tmp_file = fd;
+}
+
+int ClientState::getPipeFdOut(int i) const {
+	return this->_pipefd_out[i];
+}
+int ClientState::getPipeFdIn(int i) const {
+	return this->_pipefd_in[i];
+}
+int ClientState::getFdTmpFile() const {
+	return this->_fd_tmp_file;
+}

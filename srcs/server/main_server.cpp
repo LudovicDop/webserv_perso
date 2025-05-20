@@ -6,7 +6,7 @@
 /*   By: ldoppler <ldoppler@student.42mulhouse.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 14:32:13 by hclaude           #+#    #+#             */
-/*   Updated: 2025/05/19 14:46:18 by ldoppler         ###   ########.fr       */
+/*   Updated: 2025/05/20 19:29:55 by ldoppler         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,7 +240,10 @@ std::string	execGET(Client* client, int index_server, ServersDatas* serverdatas,
 	if (!client->checkPageExists())
 	{
 		if (!isCgiRequired(serverdatas->server[index_server], client))
-			response = client->cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
+		{
+			response = client->start_cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
+			response = client->continue_cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
+		}
 		else
 		{
 			response = client->convertRequestForSend(serverdatas->server[index_server]->routes[i], serverdatas->server[index_server]);
@@ -288,7 +291,10 @@ std::string	execPOST(Client* client, int index_server, ServersDatas* serverdatas
 	{
 		if (!isCgiRequired(serverdatas->server[index_server], client))
 		{
-			response = client->cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
+			client->start_cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
+			client->continue_cgi(serverdatas->server[index_server], *client_state[fd], poll_fds);
+			response = client_state[fd]->getResponse();
+			std::cout << "response: " << response << std::endl;
 		}
 		else
 		{

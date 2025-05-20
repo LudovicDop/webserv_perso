@@ -15,7 +15,12 @@ void	Client::setUserAgent(const std::string& user_agent) { _user_agent = user_ag
 void    Client::setHeader(const std::map<std::string, std::string> &header) { _header = header; }
 void    Client::setHeaderEntry(const std::string &key, const std::string &value) { _header[key] = value; }
 void	Client::setBody(const std::string& body) { _body = body; }
-void	Client::setContentLength(const std::string& content_length) { _content_length = content_length; };
+void	Client::setContentLength(const std::string& content_length) { 
+	if (content_length.empty())
+		return;
+	std::cout << "Content-Length: " << content_length << std::endl;
+	_content_length = content_length; 
+}
 void	Client::setKeepAlive(bool ka) { this->_ka = ka; }
 
 /*Getters*/
@@ -830,6 +835,18 @@ bool Client:: start_cgi(Server *server, ClientState &state, std::vector<struct p
 	if (pipe(pipefd_out) == -1 || pipe(pipefd_in) == -1)
 		return false;
 
+	state.setPipeFdIn(pipefd_in);
+	state.setPipeFdOut(pipefd_out);
+	int fd = open(state.getTmpFilePath().c_str(), O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		close(pipefd_in[1]);
+		close(pipefd_out[0]);
+		return false;
+	}
+	close(pipefd_in[0]);
+	close(pipefd_out[1]); //close write pipe
+	state.setFdTmpFile(fd);
 	int id = fork();
 	if (id == -1) {
 		close(pipefd_out[0]); close(pipefd_out[1]);
@@ -853,5 +870,73 @@ bool Client:: start_cgi(Server *server, ClientState &state, std::vector<struct p
 		execve(path.c_str(),  av, (char **)&envp[0]);
 		exit(EXIT_FAILURE);
 	}
+	return (true);
+}
+
+bool	Client::continue_cgi(Server *server, ClientState &state, std::vector<struct pollfd>& poll_fds)
+{
+	std::cout << BLUE << "                  =-= Continuing CGI =-=" << END << std::endl;
+	(void)poll_fds;
+	(void)server;
+	std::string total_output;
+	std::string header;
+	// int pipefd_in = state.getPipeFdIn(0);
+	// int pipefd_out = state.getPipeFdOut(1);
+
+	// close(pipefd_in);
+	// close(pipefd_out); //close write pipe
+
+	// int fd = open(state.getTmpFilePath().c_str(), O_RDONLY);
+	// if (fd < 0) {
+	// 	perror("open");
+	// 	close(state.getPipeFdIn(1));
+	// 	close(state.getPipeFdOut(0));
+	// 	return false;
+	// }
+	
+	char buffer[4096];
+	ssize_t bytes_read = 0;
+	std::cout << "tmp file path: " << state.getTmpFilePath() << std::endl;
+	bytes_read = read(state.getFdTmpFile(), buffer, sizeof(buffer));
+	if (bytes_read < 0)
+	{
+		std::cerr << "Error reading from tmp file" << std::endl;
+		return false;
+	}
+	std::cout << "buffer: " << buffer << std::endl;
+	ssize_t written = write(state.getPipeFdIn(1), buffer, bytes_read);
+	state.setCurrentLengthCGI(state.getCurrentLengthCGI() + written);
+
+	close(state.getFdTmpFile());
+	close(state.getPipeFdIn(1));
+
+	ssize_t byte_read;
+	char buf[4096];
+		
+	while ((byte_read = read(state.getPipeFdOut(0), buf, sizeof(buf))) > 0)
+		total_output.append(buf, byte_read);
+	std::cout << "total_output: " << total_output << std::endl;
+	state.setResponse(total_output);
+
+	close(state.getPipeFdOut(0));
+	wait(NULL);
+
+	hideHeaderCGI(total_output);
+
+	//init my header
+	struct t_header param;
+	this->initHeader(param, total_output.size());
+	this->setHeader(param, header);
+	state.setResponse(header + total_output);
+
+	std::cout << "currentLengthCGI: " << state.getCurrentLengthCGI() << " and ContentLength: " << state.getContentLength() << std::endl;
+	if (state.getCurrentLengthCGI() >= state.getContentLength())
+		state.setClientState(RESPONDING);
+	else
+		state.setClientState(CGI_IN_PROGRESS);
+	std::cout << "currentLengthCGI: " << state.getCurrentLengthCGI() << " and ContentLength: " << state.getContentLength() << std::endl;
+
+	std::cout << BLUE << header << END << std::endl;
+	std::cout << GREEN << "\n=-=-=-= CGI has been executed successfully! =-=-=-=" << END << std::endl;
 	return (true);
 }

@@ -51,6 +51,9 @@ class ClientState
 		const std::string &getResponse() const;
 		const bool &getHasContentLength() const;
 		unsigned long long getCurrentLengthCGI() const;
+		int		getPipeFdOut(int i) const;
+		int		getPipeFdIn(int i) const;
+		int		getFdTmpFile() const;
 		/*Setters*/
 		void	setClientState(const e_ClientState &state);
 		void	setBufferHeader(const std::string &bufferHeader);
@@ -62,6 +65,10 @@ class ClientState
 		void	setResponse(const std::string &response);
 		void	setHasContentLength(const bool hasContentLength);
 		void	setCurrentLengthCGI(unsigned long long length);
+
+		void	setPipeFdOut(int	_pipefd_out[2]);
+		void	setPipeFdIn(int		pipefd_in[2]);
+		void	setFdTmpFile(int fd);
 		/*Others*/
 		void	printInfo() const;
 		bool	init_upload(int fd);
@@ -84,6 +91,9 @@ class ClientState
 		std::string			_tmpFilePath;
 		bool				_fileOpened;
 		std::string			_response;
+		int					_pipefd_out[2];
+		int					_pipefd_in[2];
+		int					_fd_tmp_file;
 
 };
 
@@ -105,7 +115,7 @@ class Client
 		void		setBody(const std::string& body);
 		void		setHeader(const std::map<std::string, std::string> &header);
 		void		setHeaderEntry(const std::string &key, const std::string &value);
-		void		setContentLength(const std::string& content_length);
+		void		setContentLength(std::string& content_length);
 		void		setKeepAlive(bool ka);
 
 		/*Getters*/
